@@ -283,7 +283,7 @@ export default function ProfilePage() {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Đang lưu vào SQLite...
+                  Đang lưu thay đổi...
                 </span>
               ) : (
                 'Lưu thay đổi hồ sơ'
