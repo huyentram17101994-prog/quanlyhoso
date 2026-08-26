@@ -91,7 +91,7 @@ export default function RegisterPage() {
           </div>
           <h2 className="text-3xl font-semibold text-emerald-700 ">Đăng ký tài khoản mới</h2>
           <p className="text-base font-gray-700 text-slate-700 mt-1">
-            Điền đầy đủ thông tin cá nhân để tạo tài khoản trong hệ thống SQLite
+            Điền đầy đủ thông tin cá nhân để tạo tài khoản hệ thống
           </p>
         </div>
 

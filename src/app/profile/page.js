@@ -175,9 +175,9 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between pb-6 mb-6 border-b border-emerald-100">
           <div>
             <h2 className="text-xl font-bold text-slate-900">Cập nhật thông tin cá nhân</h2>
-            <p className="text-xs font-semibold text-emerald-700 mt-0.5">Thay đổi thông tin hồ sơ và lưu trực tiếp vào cơ sở dữ liệu SQLite</p>
+            <p className="text-xs font-semibold text-emerald-700 mt-0.5">Thay đổi thông tin hồ sơ cá nhân của bạn</p>
           </div>
-          <span className="badge-green">SQLite Mode</span>
+          <span className="badge-green">Hồ sơ cá nhân</span>
         </div>
 
         {message.text && (

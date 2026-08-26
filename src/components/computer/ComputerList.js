@@ -14,7 +14,7 @@ export default function ComputerList({ computers, onRefresh }) {
   // Modals state
   const [borrowingComp, setBorrowingComp] = useState(null); // computer object for borrow modal
   const [borrowForm, setBorrowForm] = useState({
-    purpose: 'Lập trình Web & Thực hành SQLite',
+    purpose: 'Lập trình Web & Thực hành phòng máy',
     startTime: new Date().toISOString().slice(0, 10),
     endTime: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
   });

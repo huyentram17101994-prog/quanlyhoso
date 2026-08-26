@@ -10,8 +10,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: "Quản Lý Phòng Máy | SQLite & Next.js",
-  description: "Hệ thống quản lý phòng máy tính, mượn trả máy phòng lab tích hợp cơ sở dữ liệu SQLite.",
+  title: "Quản Lý Phòng Máy",
+  description: "Hệ thống quản lý phòng máy tính, mượn trả máy phòng lab.",
 };
 
 export default function RootLayout({ children }) {

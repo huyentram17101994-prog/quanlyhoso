@@ -19,7 +19,7 @@ export default function Header() {
               QUẢN LÝ <span className="text-emerald-600">PHÒNG MÁY</span>
             </h1>
             <p className="text-[10px] font-semibold text-emerald-600 tracking-wider uppercase leading-none mt-1">
-              Hệ thống phòng lab SQLite
+              Hệ thống phòng lab trung tâm
             </p>
           </div>
         </Link>
