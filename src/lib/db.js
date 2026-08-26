@@ -37,15 +37,57 @@ db.exec(`
     expires_at DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
+
+  CREATE TABLE IF NOT EXISTS computers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    room TEXT DEFAULT 'Phòng máy 01',
+    specs TEXT DEFAULT '',
+    status TEXT DEFAULT 'available', -- available, pending, in_use, maintenance
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS computer_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    computer_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    purpose TEXT NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    status TEXT DEFAULT 'pending', -- pending, approved, rejected, returned
+    admin_note TEXT DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (computer_id) REFERENCES computers(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
 `);
 
-// Migration: Add dob column to existing users table if it doesn't exist yet
+// Migrations
 try {
   const tableInfo = db.prepare("PRAGMA table_info(users)").all();
   const hasDob = tableInfo.some((col) => col.name === 'dob');
   if (!hasDob) {
     db.exec("ALTER TABLE users ADD COLUMN dob TEXT DEFAULT '17/10/1994'");
   }
+  const hasRole = tableInfo.some((col) => col.name === 'role');
+  if (!hasRole) {
+    db.exec("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'");
+  }
+  // Ensure ONLY 725000001@student.edu.vn is admin, set all other users to 'user' role
+  db.exec("UPDATE users SET role = 'user' WHERE LOWER(email) != '725000001@student.edu.vn'");
+  db.exec("UPDATE users SET role = 'admin' WHERE LOWER(email) = '725000001@student.edu.vn'");
+
+  // Migration: Update existing computer names to simple sequence M01, M02...
+  db.exec(`
+    UPDATE computers SET code = 'M01', name = 'Máy M01', specs = '' WHERE code = 'PC-01';
+    UPDATE computers SET code = 'M02', name = 'Máy M02', specs = '' WHERE code = 'PC-02';
+    UPDATE computers SET code = 'M03', name = 'Máy M03', specs = '' WHERE code = 'PC-03';
+    UPDATE computers SET code = 'M04', name = 'Máy M04', specs = '' WHERE code = 'PC-04';
+    UPDATE computers SET code = 'M05', name = 'Máy M05', specs = '' WHERE code = 'PC-05';
+    UPDATE computers SET code = 'M06', name = 'Máy M06', specs = '' WHERE code = 'PC-06';
+  `);
 } catch (e) {
   console.error("Error migrating table info:", e);
 }
@@ -60,8 +102,8 @@ function hashPasswordSeed(password) {
 const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
 if (userCount === 0) {
   const insertStmt = db.prepare(`
-    INSERT INTO users (email, phone, password, full_name, mssv, class_name, dob, avatar)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO users (email, phone, password, full_name, mssv, class_name, dob, avatar, role)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   
   insertStmt.run(
@@ -72,8 +114,31 @@ if (userCount === 0) {
     '725000001',
     '25CT712',
     '17/10/1994',
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    'admin'
   );
+}
+
+// Seed demo computers if no computers exist
+const computerCount = db.prepare('SELECT COUNT(*) as count FROM computers').get().count;
+if (computerCount === 0) {
+  const insertComp = db.prepare(`
+    INSERT INTO computers (code, name, room, specs, status)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+
+  const initialComputers = [
+    ['M01', 'Máy M01', 'Phòng máy 01', '', 'available'],
+    ['M02', 'Máy M02', 'Phòng máy 01', '', 'available'],
+    ['M03', 'Máy M03', 'Phòng máy 01', '', 'in_use'],
+    ['M04', 'Máy M04', 'Phòng máy 01', '', 'pending'],
+    ['M05', 'Máy M05', 'Phòng máy 02', '', 'available'],
+    ['M06', 'Máy M06', 'Phòng máy 02', '', 'maintenance']
+  ];
+
+  initialComputers.forEach(([code, name, room, specs, status]) => {
+    insertComp.run(code, name, room, specs, status);
+  });
 }
 
 export default db;

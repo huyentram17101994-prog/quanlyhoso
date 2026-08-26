@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { hashPassword, createSession } from '@/lib/auth';
 
 export async function POST(request) {
@@ -16,7 +16,6 @@ export async function POST(request) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim();
 
-    // Basic format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
       return NextResponse.json(
@@ -33,7 +32,6 @@ export async function POST(request) {
       );
     }
 
-    // Password length validation (Requirement: >= 8 characters)
     if (password.length < 8) {
       return NextResponse.json(
         { error: 'Mật khẩu quy định phải có từ 8 ký tự trở lên' },
@@ -48,8 +46,12 @@ export async function POST(request) {
       );
     }
 
-    // Check unique email
-    const existingEmail = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+    const { data: existingEmail } = await supabase
+      .from('users')
+      .select('id')
+      .ilike('email', cleanEmail)
+      .maybeSingle();
+
     if (existingEmail) {
       return NextResponse.json(
         { error: 'Email này đã được sử dụng' },
@@ -57,8 +59,12 @@ export async function POST(request) {
       );
     }
 
-    // Check unique phone
-    const existingPhone = db.prepare('SELECT id FROM users WHERE phone = ?').get(cleanPhone);
+    const { data: existingPhone } = await supabase
+      .from('users')
+      .select('id')
+      .eq('phone', cleanPhone)
+      .maybeSingle();
+
     if (existingPhone) {
       return NextResponse.json(
         { error: 'Số điện thoại này đã được đăng ký' },
@@ -68,30 +74,29 @@ export async function POST(request) {
 
     const hashedPassword = hashPassword(password);
     const defaultAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+    const assignedRole = cleanEmail === '725000001@student.edu.vn' ? 'admin' : 'user';
 
-    const insertStmt = db.prepare(`
-      INSERT INTO users (email, phone, password, full_name, mssv, class_name, dob, avatar)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    const { data: newUser, error: insertErr } = await supabase
+      .from('users')
+      .insert([
+        {
+          email: cleanEmail,
+          phone: cleanPhone,
+          password: hashedPassword,
+          full_name: full_name.trim(),
+          mssv: (mssv || '').trim(),
+          class_name: (class_name || '').trim(),
+          dob: (dob || '17/10/1994').trim(),
+          avatar: defaultAvatar,
+          role: assignedRole,
+        },
+      ])
+      .select('id, email, phone, full_name, mssv, class_name, dob, avatar, role, created_at')
+      .single();
 
-    const result = insertStmt.run(
-      cleanEmail,
-      cleanPhone,
-      hashedPassword,
-      full_name.trim(),
-      (mssv || '').trim(),
-      (class_name || '').trim(),
-      (dob || '17/10/1994').trim(),
-      defaultAvatar
-    );
+    if (insertErr) throw insertErr;
 
-    const newUserId = result.lastInsertRowid;
-    await createSession(newUserId);
-
-    const newUser = db.prepare(`
-      SELECT id, email, phone, full_name, mssv, class_name, dob, avatar, created_at
-      FROM users WHERE id = ?
-    `).get(newUserId);
+    await createSession(newUser.id);
 
     return NextResponse.json({
       message: 'Đăng ký tài khoản thành công',

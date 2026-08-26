@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { getCurrentUser, verifyPassword, hashPassword } from '@/lib/auth';
 
 export async function POST(request) {
@@ -18,13 +18,16 @@ export async function POST(request) {
       );
     }
 
-    // Get current stored password hash
-    const user = db.prepare('SELECT password FROM users WHERE id = ?').get(currentUser.id);
-    if (!user) {
+    const { data: user, error: findErr } = await supabase
+      .from('users')
+      .select('password')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+
+    if (findErr || !user) {
       return NextResponse.json({ error: 'Người dùng không tồn tại' }, { status: 404 });
     }
 
-    // Verify old password
     const isOldPasswordCorrect = verifyPassword(old_password, user.password);
     if (!isOldPasswordCorrect) {
       return NextResponse.json(
@@ -33,7 +36,6 @@ export async function POST(request) {
       );
     }
 
-    // Password rule validation (Requirement: >= 8 chars)
     if (new_password.length < 8) {
       return NextResponse.json(
         { error: 'Mật khẩu mới phải từ 8 ký tự trở lên' },
@@ -55,12 +57,15 @@ export async function POST(request) {
       );
     }
 
-    // Hash new password and update in DB
     const newHashedPassword = hashPassword(new_password);
-    db.prepare('UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(
-      newHashedPassword,
-      currentUser.id
-    );
+    const now = new Date().toISOString();
+
+    const { error: updateErr } = await supabase
+      .from('users')
+      .update({ password: newHashedPassword, updated_at: now })
+      .eq('id', currentUser.id);
+
+    if (updateErr) throw updateErr;
 
     return NextResponse.json({
       message: 'Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.',

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { verifyPassword, createSession } from '@/lib/auth';
 
 export async function POST(request) {
@@ -13,21 +13,22 @@ export async function POST(request) {
       );
     }
 
-    const inputClean = email_or_phone.trim();
+    const inputClean = email_or_phone.trim().toLowerCase();
 
-    // Query user by email OR phone
-    const user = db.prepare(`
-      SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR phone = ?
-    `).get(inputClean, inputClean);
+    const { data: users, error: findErr } = await supabase
+      .from('users')
+      .select('*')
+      .or(`email.ilike.${inputClean},phone.eq.${inputClean}`);
 
-    if (!user) {
+    const user = users && users.length > 0 ? users[0] : null;
+
+    if (findErr || !user) {
       return NextResponse.json(
         { error: 'Tài khoản không tồn tại trong hệ thống' },
         { status: 401 }
       );
     }
 
-    // Verify password
     const isPasswordValid = verifyPassword(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -36,7 +37,6 @@ export async function POST(request) {
       );
     }
 
-    // Create session cookie
     await createSession(user.id);
 
     const { password: _, ...userData } = user;

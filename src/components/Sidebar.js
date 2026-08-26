@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
 export default function Sidebar() {
-  const { sidebarOpen, toggleSidebar, activeCategory, setActiveCategory, logout, user } = useAuth();
+  const { user, sidebarOpen, toggleSidebar, activeCategory, setActiveCategory } = useAuth();
 
   const menuItems = [
     {
@@ -34,6 +34,16 @@ export default function Sidebar() {
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      ),
+    },
+    {
+      id: 'computers',
+      label: 'Quản lý máy tính',
+      href: '/computers',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       ),
     },
@@ -99,44 +109,46 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom User Card / Logout */}
-      <div className="p-3 border-t border-emerald-100 bg-emerald-50/40">
-        {sidebarOpen ? (
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={user?.avatar || '/default-avatar.png'}
-                alt="Avatar"
-                className="w-8 h-8 rounded-full object-cover border border-emerald-300 flex-shrink-0"
-              />
-              <div className="overflow-hidden text-xs">
-                <p className="font-bold text-slate-800 truncate">{user?.full_name || 'Học viên'}</p>
-                <p className="text-[11px] text-emerald-700 truncate">{user?.phone || user?.email}</p>
-              </div>
-            </div>
-            <button
-              onClick={logout}
-              className="p-1.5 text-slate-400 hover:text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
-              title="Đăng xuất"
+      {/* Sidebar Footer: Role Text Badge at bottom-left of menu (Guaranteed Pastel Fill) */}
+      {user && (
+        <div className="p-3 border-t border-emerald-100/80">
+          {sidebarOpen ? (
+            <div 
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-black border shadow-xs transition-all"
+              style={
+                user.role === 'admin'
+                  ? { backgroundColor: '#fef3c7', borderColor: '#fcd34d', color: '#92400e' }
+                  : { backgroundColor: '#d1fae5', borderColor: '#6ee7b7', color: '#065f46' }
+              }
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={logout}
-            className="w-full flex items-center justify-center p-2 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-colors"
-            title="Đăng xuất"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
-        )}
-      </div>
+              <span 
+                className="w-2.5 h-2.5 rounded-full shrink-0" 
+                style={{ backgroundColor: user.role === 'admin' ? '#f59e0b' : '#10b981' }}
+              ></span>
+              <span className="whitespace-nowrap">
+                Vai trò: <span style={{ color: user.role === 'admin' ? '#78350f' : '#047857' }} className="font-extrabold">
+                  {user.role === 'admin' ? 'Quản trị viên (Admin)' : 'Học viên (User)'}
+                </span>
+              </span>
+            </div>
+          ) : (
+            <div
+              className="inline-flex items-center justify-center p-2 rounded-xl border shadow-xs"
+              style={
+                user.role === 'admin'
+                  ? { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }
+                  : { backgroundColor: '#d1fae5', borderColor: '#6ee7b7' }
+              }
+              title={`Vai trò: ${user.role === 'admin' ? 'Quản trị viên (Admin)' : 'Học viên (User)'}`}
+            >
+              <span 
+                className="w-2.5 h-2.5 rounded-full" 
+                style={{ backgroundColor: user.role === 'admin' ? '#f59e0b' : '#10b981' }}
+              ></span>
+            </div>
+          )}
+        </div>
+      )}
     </aside>
   );
 }

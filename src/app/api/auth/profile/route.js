@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function PUT(request) {
@@ -21,39 +21,46 @@ export async function PUT(request) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim();
 
-    // Check if new email conflicts with another user
-    const emailConflict = db.prepare('SELECT id FROM users WHERE LOWER(email) = ? AND id != ?').get(cleanEmail, currentUser.id);
+    const { data: emailConflict } = await supabase
+      .from('users')
+      .select('id')
+      .ilike('email', cleanEmail)
+      .neq('id', currentUser.id)
+      .maybeSingle();
+
     if (emailConflict) {
       return NextResponse.json({ error: 'Email này đã được sử dụng bởi tài khoản khác' }, { status: 400 });
     }
 
-    // Check if new phone conflicts with another user
-    const phoneConflict = db.prepare('SELECT id FROM users WHERE phone = ? AND id != ?').get(cleanPhone, currentUser.id);
+    const { data: phoneConflict } = await supabase
+      .from('users')
+      .select('id')
+      .eq('phone', cleanPhone)
+      .neq('id', currentUser.id)
+      .maybeSingle();
+
     if (phoneConflict) {
       return NextResponse.json({ error: 'Số điện thoại này đã được sử dụng bởi tài khoản khác' }, { status: 400 });
     }
 
-    const updateStmt = db.prepare(`
-      UPDATE users
-      SET avatar = ?, full_name = ?, mssv = ?, class_name = ?, dob = ?, email = ?, phone = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
+    const now = new Date().toISOString();
+    const { data: updatedUser, error: updateErr } = await supabase
+      .from('users')
+      .update({
+        avatar: avatar || currentUser.avatar,
+        full_name: full_name.trim(),
+        mssv: (mssv || '').trim(),
+        class_name: (class_name || '').trim(),
+        dob: (dob || '17/10/1994').trim(),
+        email: cleanEmail,
+        phone: cleanPhone,
+        updated_at: now,
+      })
+      .eq('id', currentUser.id)
+      .select('id, email, phone, full_name, mssv, class_name, dob, avatar, role, created_at, updated_at')
+      .single();
 
-    updateStmt.run(
-      avatar || currentUser.avatar,
-      full_name.trim(),
-      (mssv || '').trim(),
-      (class_name || '').trim(),
-      (dob || '17/10/1994').trim(),
-      cleanEmail,
-      cleanPhone,
-      currentUser.id
-    );
-
-    const updatedUser = db.prepare(`
-      SELECT id, email, phone, full_name, mssv, class_name, dob, avatar, created_at, updated_at
-      FROM users WHERE id = ?
-    `).get(currentUser.id);
+    if (updateErr) throw updateErr;
 
     return NextResponse.json({
       message: 'Cập nhật thông tin cá nhân thành công!',

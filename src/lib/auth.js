@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
-import db from './db';
+import { supabase } from './supabase';
 
 const SALT = 'my_profile_static_salt_2026';
 const COOKIE_NAME = 'auth_session';
@@ -10,16 +10,21 @@ export function hashPassword(password) {
 }
 
 export function verifyPassword(password, storedHash) {
+  if (!storedHash || typeof storedHash !== 'string') return false;
   const hash = hashPassword(password);
-  return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(storedHash));
+  const hashBuf = Buffer.from(hash);
+  const storedBuf = Buffer.from(storedHash);
+  if (hashBuf.length !== storedBuf.length) return false;
+  return crypto.timingSafeEqual(hashBuf, storedBuf);
 }
 
 export async function createSession(userId) {
   const sessionId = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const stmt = db.prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)');
-  stmt.run(sessionId, userId, expiresAt);
+  await supabase
+    .from('sessions')
+    .insert([{ id: sessionId, user_id: userId, expires_at: expiresAt }]);
 
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, sessionId, {
@@ -40,15 +45,20 @@ export async function getCurrentUser() {
 
     if (!sessionId) return null;
 
-    const sessionStmt = db.prepare(`
-      SELECT s.id as session_id, s.expires_at, u.id, u.email, u.phone, u.full_name, u.mssv, u.class_name, u.dob, u.avatar, u.created_at
-      FROM sessions s
-      JOIN users u ON s.user_id = u.id
-      WHERE s.id = ? AND s.expires_at > ?
-    `);
+    const { data: session, error: sessErr } = await supabase
+      .from('sessions')
+      .select('id, expires_at, user_id, users(id, email, phone, full_name, mssv, class_name, dob, avatar, role, created_at)')
+      .eq('id', sessionId)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle();
 
-    const user = sessionStmt.get(sessionId, new Date().toISOString());
-    return user || null;
+    if (sessErr || !session || !session.users) return null;
+
+    return {
+      session_id: session.id,
+      expires_at: session.expires_at,
+      ...session.users,
+    };
   } catch (error) {
     console.error('Error getting current user:', error);
     return null;
@@ -61,7 +71,7 @@ export async function destroySession() {
     const sessionId = cookieStore.get(COOKIE_NAME)?.value;
 
     if (sessionId) {
-      db.prepare('DELETE FROM sessions WHERE id = ?').run(sessionId);
+      await supabase.from('sessions').delete().eq('id', sessionId);
     }
 
     cookieStore.set(COOKIE_NAME, '', {

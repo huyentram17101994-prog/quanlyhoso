@@ -60,39 +60,41 @@ body {
   background: #10b981;
 }
 
-/* Header layout */
+/* Header layout (Floating Card with Rounded Borders) */
 .app-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 12px;
+  left: 12px;
+  right: 12px;
   height: var(--header-height);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid #d1fae5;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1.5rem;
   z-index: 100;
-  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.06);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
   transition: var(--transition-normal);
 }
 
-/* Left Sidebar Layout */
+/* Left Sidebar Layout (Floating Card Menu with Rounded Borders) */
 .app-sidebar {
   position: fixed;
-  top: var(--header-height);
-  bottom: 0;
-  left: 0;
+  top: calc(var(--header-height) + 24px);
+  bottom: 12px;
+  left: 12px;
   width: var(--sidebar-width);
   background: var(--bg-white);
-  border-right: 1px solid #d1fae5;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 1.25rem;
   display: flex;
   flex-direction: column;
   z-index: 90;
   transition: var(--transition-normal);
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.06);
   overflow-y: auto;
 }
 
@@ -100,19 +102,24 @@ body {
   width: var(--sidebar-collapsed-width);
 }
 
-/* Main Body Content Layout */
+/* Main Body Content Layout (Floating Container with Rounded Borders) */
 .app-main-body {
-  margin-top: var(--header-height);
-  margin-left: var(--sidebar-width);
-  min-height: calc(100vh - var(--header-height));
-  padding: 2rem;
+  margin-top: calc(var(--header-height) + 24px);
+  margin-left: calc(var(--sidebar-width) + 24px);
+  margin-right: 12px;
+  margin-bottom: 12px;
+  min-height: calc(100vh - var(--header-height) - 36px);
+  padding: 1.75rem;
   transition: var(--transition-normal);
-  background-color: var(--bg-page);
+  background-color: #ffffff;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.04);
 }
 
 .app-sidebar.collapsed+.app-main-body,
 .app-main-body.collapsed {
-  margin-left: var(--sidebar-collapsed-width);
+  margin-left: calc(var(--sidebar-collapsed-width) + 24px);
 }
 
 /* Green Buttons & Controls */
@@ -1007,6 +1014,18 @@ body {
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .animate-spin {
   animation: spin 1s linear infinite;
 }
@@ -1057,6 +1076,18 @@ body {
   .sm\:flex {
     display: flex;
   }
+
+  .sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sm\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sm\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 768px) {
@@ -1093,4 +1124,125 @@ body {
   .lg\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+/* Computer Status Row Themes */
+.status-row-available {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+.status-row-available:hover {
+  background-color: #d1fae5 !important;
+}
+
+.status-row-pending {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+.status-row-pending:hover {
+  background-color: #fef3c7 !important;
+}
+
+.status-row-in_use {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+.status-row-in_use:hover {
+  background-color: #dbeafe !important;
+}
+
+.status-row-maintenance {
+  background-color: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+}
+.status-row-maintenance:hover {
+  background-color: #ffe4e6 !important;
+}
+
+/* Status Badges */
+.badge-status-available {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border: 1px solid #047857 !important;
+}
+
+.badge-status-pending {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+  border: 1px solid #b45309 !important;
+}
+
+.badge-status-in_use {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border: 1px solid #1d4ed8 !important;
+}
+
+.badge-status-maintenance {
+  background-color: #e11d48 !important;
+  color: #ffffff !important;
+  border: 1px solid #be123c !important;
+}
+
+/* Stat Cards Soft Pastel Themes */
+.card-stat-emerald {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+  color: #065f46 !important;
+  border: 1.5px solid #a7f3d0 !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.1) !important;
+}
+
+.card-stat-blue {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  color: #1e40af !important;
+  border: 1.5px solid #bfdbfe !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.1) !important;
+}
+
+.card-stat-indigo {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%) !important;
+  color: #3730a3 !important;
+  border: 1.5px solid #a5b4fc !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.1) !important;
+}
+
+.card-stat-amber {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  color: #92400e !important;
+  border: 1.5px solid #fde68a !important;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.1) !important;
+}
+
+/* Running Horizontal Progress Bar Shimmer Animations */
+@keyframes progress-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.bar-running-emerald {
+  background: linear-gradient(90deg, #10b981 0%, #6ee7b7 50%, #10b981 100%) !important;
+  background-size: 200% 100% !important;
+  animation: progress-shimmer 2s infinite linear !important;
+}
+
+.bar-running-amber {
+  background: linear-gradient(90deg, #f59e0b 0%, #fde047 50%, #f59e0b 100%) !important;
+  background-size: 200% 100% !important;
+  animation: progress-shimmer 2s infinite linear !important;
+}
+
+.bar-running-blue {
+  background: linear-gradient(90deg, #3b82f6 0%, #93c5fd 50%, #3b82f6 100%) !important;
+  background-size: 200% 100% !important;
+  animation: progress-shimmer 2s infinite linear !important;
+}
+
+.bar-running-rose {
+  background: linear-gradient(90deg, #f43f5e 0%, #fda4af 50%, #f43f5e 100%) !important;
+  background-size: 200% 100% !important;
+  animation: progress-shimmer 2s infinite linear !important;
 }

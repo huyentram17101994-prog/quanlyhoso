@@ -164,6 +164,9 @@ export default function ProfilePage() {
           </div>
           <p className="text-blue-100 text-sm font-medium">{email}</p>
           <p className="text-blue-100 text-sm font-medium">{phone}</p>
+          <p className="text-blue-100 text-xs font-semibold pt-0.5">
+            Vai trò hệ thống: <span className="font-bold underline">{user.role === 'admin' ? 'Quản trị viên (Admin)' : 'Học viên (User)'}</span>
+          </p>
         </div>
       </div>
 
