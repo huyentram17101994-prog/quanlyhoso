@@ -172,9 +172,8 @@ export default function ProfilePage() {
 
       {/* Form Update Card */}
       <div className="bg-white rounded-2xl border border-emerald-100 p-6 md:p-8 shadow-md">
-        <div className="pb-6 mb-6 border-b border-emerald-100">
+        <div className="pb-4 mb-6 border-b border-emerald-100">
           <h2 className="text-xl font-bold text-slate-900">Cập nhật thông tin cá nhân</h2>
-          <p className="text-xs font-semibold text-emerald-700 mt-0.5">Thay đổi thông tin hồ sơ cá nhân của bạn</p>
         </div>
 
         {message.text && (
