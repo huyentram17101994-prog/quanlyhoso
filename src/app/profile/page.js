@@ -58,7 +58,7 @@ export default function ProfilePage() {
       }
 
       setAvatar(data.url);
-      setMessage({ type: 'success', text: 'Tải ảnh từ máy tính lên thành công! Bấm "Lưu thay đổi hồ sơ" để lưu vào SQLite.' });
+      setMessage({ type: 'success', text: 'Tải ảnh từ máy tính/điện thoại lên thành công! Bấm "Lưu thay đổi hồ sơ" để lưu lại.' });
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
     } finally {

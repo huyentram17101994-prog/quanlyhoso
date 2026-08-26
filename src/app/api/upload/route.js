@@ -1,7 +1,4 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
-import crypto from 'crypto';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(request) {
@@ -18,7 +15,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Vui lòng chọn file hình ảnh hợp lệ' }, { status: 400 });
     }
 
-    // Check file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
     if (!validTypes.includes(file.type)) {
       return NextResponse.json(
@@ -27,40 +23,27 @@ export async function POST(request) {
       );
     }
 
-    // Check file size (max 5MB)
-    const MAX_SIZE = 5 * 1024 * 1024;
+    const MAX_SIZE = 4 * 1024 * 1024; // Max 4MB for Base64 Data URL
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { error: 'Kích thước file ảnh không được vượt quá 5MB' },
+        { error: 'Kích thước file ảnh không được vượt quá 4MB' },
         { status: 400 }
       );
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    // Ensure public/uploads directory exists
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadsDir, { recursive: true });
-
-    // Generate unique filename
-    const fileExtension = path.extname(file.name) || '.png';
-    const uniqueFilename = `avatar-${user.id}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}${fileExtension}`;
-    const filePath = path.join(uploadsDir, uniqueFilename);
-
-    // Save file to disk
-    await writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/${uniqueFilename}`;
+    const mimeType = file.type || 'image/png';
+    const base64DataUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
 
     return NextResponse.json({
       message: 'Tải ảnh lên thành công',
-      url: publicUrl,
+      url: base64DataUrl,
     });
   } catch (error) {
     console.error('File upload error:', error);
     return NextResponse.json(
-      { error: 'Lỗi trong quá trình tải ảnh lên máy chủ' },
+      { error: 'Lỗi trong quá trình xử lý hình ảnh' },
       { status: 500 }
     );
   }
