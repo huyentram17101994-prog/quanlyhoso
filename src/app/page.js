@@ -2,14 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
-  const { user, setActiveCategory } = useAuth();
+  const { user, loading: authLoading, setActiveCategory } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
     setActiveCategory('dashboard');
     fetchStats(true);
 
@@ -19,7 +25,7 @@ export default function HomePage() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [setActiveCategory]);
+  }, [user, authLoading, setActiveCategory, router]);
 
   const fetchStats = async (isInitial = false) => {
     try {

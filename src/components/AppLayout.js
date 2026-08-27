@@ -13,7 +13,7 @@ export default function AppLayout({ children }) {
 
   if (isAuthPage) {
     return (
-      <div className="min-h-screen bg-emerald-50/50 flex flex-col justify-center items-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50/80 via-teal-50/50 to-slate-100 flex items-center justify-center p-4">
         {children}
       </div>
     );

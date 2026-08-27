@@ -34,7 +34,7 @@ export async function POST(request) {
 
     if (password.length < 8) {
       return NextResponse.json(
-        { error: 'Mật khẩu quy định phải có từ 8 ký tự trở lên' },
+        { error: 'nhập mật khẩu tối thiểu 8 ký tự' },
         { status: 400 }
       );
     }

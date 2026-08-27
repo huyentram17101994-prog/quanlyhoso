@@ -35,6 +35,16 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, [fetchUser]);
 
+  // Tự động chuyển hướng về trang Đăng nhập (/login) khi vừa mở trang web mà chưa đăng nhập
+  useEffect(() => {
+    if (!loading) {
+      const isAuthPage = pathname === '/login' || pathname === '/register';
+      if (!user && !isAuthPage) {
+        router.push('/login');
+      }
+    }
+  }, [user, loading, pathname, router]);
+
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
